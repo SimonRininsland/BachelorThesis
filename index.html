@@ -1,0 +1,66 @@
+<html>
+<head>
+	<link rel="stylesheet" href="css/app.css"/>
+	<link rel="stylesheet" href="css/tooltipster.css"/>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+	<script src="js/d3.min.js"></script>
+	<script src="js/neo4j_fire.js"></script>
+	<script src="js/jquery.tooltipster.min.js"></script>
+	<script src="example.js"></script>
+</head>
+<body>
+	<div id='terminal_area'>
+		<textarea id="terminal"></textarea>
+		<div id='shortcuts'>
+			<button class='shortcuts' id='get_neo_data'=>get_neo_data</button>
+			<button class='shortcuts' id='delete_all'>delete_all</button>
+			<button class='shortcuts' id='create_vis'>create_Full_vis</button>
+			<button class='shortcuts' id='create_visOnly_node' class="tooltip" title="for only Nodes like Fraport example">create_visOnly_node</button>
+			<button class='shortcuts' id='read_vMachines'>read_vMachines</button>
+			<button class='shortcuts' id='add_example'>add_example</button>
+		</div>
+		<textarea id="result"></textarea>
+	</div>
+	<div id='action_area'></div>
+	
+	<script src="js/outsource.js"></script>
+	<script>
+		//------------click Events--------------------
+		$("#get_neo_data").click(function(){
+			get_neo_data()
+		});
+		$("#delete_all").click(function(){
+			simple_commit("MATCH (n)OPTIONAL MATCH (n)-[r]-()DELETE n,r");
+		});
+		$("#create_vis").click(function(){
+			visData();
+			
+		});
+		$("#read_vMachines").click(function(){
+			$.post( "api_connector.php",{func: "get_virtualMachineList"})
+			.done(function(virtualMachineList) {
+				virtualMachineList=JSON.parse(virtualMachineList);
+				$("#result").text(virtualMachineList);
+				$("#result").after("<button id='insert_in_neo'>insert_in_neo?</button>");
+				$("#insert_in_neo").click(function(){
+					$.each( virtualMachineList, function( key, value ) {
+						simple_commit("CREATE (n:Server {id:'"+key+"',label:'server', name:'"+value+"'})");
+						console.log(key + ": " + value);
+					});
+					$("#insert_in_neo").remove();
+				});
+			});
+		});	
+		$("#create_visOnly_node").click(function(){
+			moddedVisData();
+		});
+		$("#add_example").click(function(){
+			$("#terminal").text(example);
+			alert("push Enter at the End of the terminal to fire!");
+		});
+	$(".shortcuts").click(function(){
+		$("svg").remove();
+	});
+	</script>
+</body>
+</html>
